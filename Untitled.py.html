@@ -1,0 +1,796 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
+
+
+
+# In[3]:
+
+
+import openai
+import os
+
+from dotenv import load_dotenv, find_dotenv
+_ = load_dotenv(find_dotenv())
+
+openai.api_key  = os.getenv('OPENAI_API_KEY')
+
+def get_completion(prompt, model="gpt-3.5-turbo"):
+    messages = [{"role": "user", "content": prompt}]
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        temperature=0, # this is the degree of randomness of the model's output
+    )
+    return response.choices[0].message["content"]
+
+list_of_classes = """
+START OF 9TH GRADE:
+
+ART:
+Art Lab 
+Ceramics 1 - Hand Building 
+Ceramics 2 – Pottery Wheel 
+Drawing
+Graphic Art & Design 1
+Graphic Art & Design 2 
+Painting
+Photography 1 (Digital Only)
+
+AVID:
+ AVID 9 (S1) 
+AVID 9 (S2) (An application and interview are required for admission)
+ 
+BUSINESS:
+Business Communication (Hybrid) 
+Business Communication (Virtual) 
+Career Investigations (Hybrid)
+Career Investigations (Virtual) 
+Marketing 1 (Hybrid) 
+Marketing 1 (Virtual) 
+Marketing 2 (Hybrid) 
+Marketing 2 (Virtual) 
+Personal Financial Management (Hybrid) 
+Personal Financial Management (Virtual)
+Word Processing/Keyboarding (Hybrid)  
+Word Processing/Keyboarding (Virtual) 
+
+ENGLISH LANGUAGE ARTS: 
+English 9 (This is a preregistered course) 
+Honors English 9 (This is a preregistered course) 
+Advanced Journalism (Hybrid) 
+Journalism 
+Journalism (Hybrid)  
+
+FAMILY AND CONSUMER SCIENCE: 
+Advanced Foods 
+Advanced Foods (Hybrid) 
+Baking and Pastries 
+Child Development 
+Child Development 2 
+Fashion Design 
+Introduction to Foods 
+
+MATHEMATICS: (You will be preregistered for the appropriate math level based on your 8th grade math course) 
+
+
+MUSIC: 
+Choir (S1)  
+Choir (S2) 
+Concert Band (S1)  
+Concert Band (S2)  
+Guitar 
+Music Lab  
+Music Production
+Piano 
+World Drumming 
+
+PHYSICAL EDUCATION: 
+Intro to Weight Training 
+Physical Education 9 
+Racquet Sports 
+Stress Management/First Aid (Hybrid)  
+
+SCIENCE: 
+AP Biology (S1) (Must contact your Dean) 
+AP Biology (S2) (Must contact your Dean)
+AP Chemistry 1 (Must contact your Dean) 
+Honors Biology (This is a preregistered course) 
+Physical Science (This is a preregistered course) 
+
+SOCIAL STUDIES: 
+AP Comparative Govt & Politics 
+AP Human Geography (S1)   
+AP Human Geography (S2)   
+AP US Government and Politics 
+Civics 
+Geography 
+The Music of Social Justice 
+The Music of Social Justice (Hybrid)
+
+STEM ACADEMY/INDUSTRIAL TECHNOLOGY: 
+Architecture 1
+DIY Home Projects 
+Electricity & Electronics 1 
+Engine Technology 
+Engineering Your Future 1 
+Engineering Your Future 2 
+Woods 1 
+
+INDUSTRIAL TECHNOLOGY AT LAKEVILLE NORTH: 
+Manufacturing, Metals & Weld 1
+Manufacturing, Metals & Weld 2 
+
+WORLD LANGUAGE: 
+(Must register for both semesters) 
+American Sign Language 1 (S1) 
+American Sign Language 1 (S2)
+Honors Spanish 2 (S1)
+Honors Spanish 2 (S2)
+Spanish 1 (S1)  
+Spanish 1 (S2)   
+Spanish 2 (S1) (Hybrid)
+Spanish 2 (S2) (Hybrid)
+Spanish 2 (S1) 
+Spanish 2 (S2)  
+
+END OF 9TH GRADE
+
+START OF 10TH GRADE
+
+ART:
+Art Lab 1
+Ceramics 1  Hand Building 
+Ceramics 2 – Pottery Wheel  
+Drawing  
+Drawing & Painting 2  
+Graphic Art & Design 1  
+Graphic Art & Design 2  
+Graphic Art & Design 3  
+Painting 15
+Photography 1 (Digital Only)  
+AVID
+AVID 1 (S1) 
+AVID 1 (S2)
+(An application and interview are required for admission)
+
+BUSINESS
+Accounting 1 (Virtual)
+Accounting 2 (Hybrid)  
+Accounting 2 (Virtual) 
+Business Communication (Hybrid)  
+Business Communication (Virtual) 
+Career Investigations (Hybrid) 
+Career Investigations (Virtual)
+Digital Media: Game & Web Dev 
+Digital Media: Game & Web Dev (Hybrid)  
+Digital Media: Game & Web Dev (Virtual) 
+Marketing 1 (Hybrid) 
+Marketing 1 (Virtual)
+Marketing 2 (Hybrid) 
+Marketing 2 (Virtual)
+Personal Financial Management (Hybrid) 
+Personal Financial Management (Virtual) 
+Retail Merch: School Store (Hybrid) 
+Word Processing/Keyboarding (Hybrid)  
+Word Processing/Keyboarding (Virtual) 
+
+ENGLISH LANGUAGE ARTS:
+Advanced Broadcast 
+Advanced Journalism (Hybrid)  
+Broadcast Media
+Creative Writing
+Creative Writing (Hybrid) 
+English 1 (S1)  
+English 1 (S2) 
+Film Analysis and Production 
+Honors English 10 (S1)  
+
+Honors English 10 (S1)  
+Interpersonal Communication (Hybrid)
+Interpersonal Communication
+Journalism 
+Journalism (Hybrid)  
+Public Speaking  
+Public Speaking (Hybrid) 
+Yearbook Journalism (Hybrid)  
+
+FAMILY AND CONSUMER SCIENCE:
+Advanced Foods
+Advanced Foods (Hybrid) 
+Baking and Pastries
+Child Development 1 
+Child Development 2 
+Fashion Design
+Introduction to Foods 
+
+MATHEMATICS:
+Algebra 2 (S1)
+Algebra 2 (S2)  
+Computer Programming 1  
+Computer Programming 2  
+Geometry (S1)
+Geometry (S2) 
+Honors Algebra 2 (S1) 
+Honors Algebra 2 (S2) 
+Honors Geometry (S1)  
+Honors Geometry (S2)  
+Honors PreCalculus (S1) 
+Honors PreCalculus (S2)  
+PreCalculus (S1)  
+PreCalculus (S2) 
+
+MUSIC:
+Choir (S1)  
+Choir (S2) 
+Concert Band (S1)  
+Concert Band (S2)  
+Guitar  
+Music Lab 
+Music Production  
+Piano  
+World Drumming  
+
+PHYSICAL EDUCATION/HEALTH:
+Advanced Racquet Sports 
+Competitive Team Sports 
+Dance 
+Health Issues 
+Health Issues Hybrid 
+Health Issues Online (Virtual) 
+Intermediate Weight Training 
+Intro to Sports Medicine
+Intro to Weight Training 
+Lifetime & Rec Activities 
+Physical Education 112 
+Physical Education 112 (Early Bird)  
+Physical Education Online (Virtual) 
+Racquet Sports 
+Stress Management/First Aid (Hybrid)  
+Unified Physical Education 
+
+SCIENCE:
+Anatomy & Physiology 
+Anatomy & Physiology 
+AP Biology (S1)
+AP Biology (S2) 
+AP Chemistry 1  
+Astronomy SCA1
+Biology (S1) 
+Biology (S2) 
+Chemistry (S1) 
+Chemistry (S2) 
+Honors Biology (S1)  
+Honors Biology (S2)  
+Honors Chemistry (S1)  
+Honors Chemistry (S2) 
+Science of Natural Disasters 
+
+
+SOCIAL STUDIES:
+AP Art History (S1) 
+AP Art History (S2)  
+AP Comparative Govt & Politics 
+AP Human Geography (S1) 
+AP Human Geography (S2) 
+AP Macroeconomics 
+AP Microeconomics 
+AP Psychology (S1) (Early Bird)  
+AP Psychology (S2) (Early Bird)  
+AP Psychology (S1) 
+AP Psychology (S2) 
+AP United States History (S1) 
+AP United States History (S2)  
+AP US Government and Politics 
+Civics 112 (Hybrid)  
+Civics 112 
+Criminal Justice (Hybrid) 
+Criminal Justice  
+Geography 
+History of Sports (Hybrid) 
+History of Sports  
+Introduction to Economics 
+Introduction to Economics (Hybrid)  
+Introduction to Economics (Virtual) 
+Psychology (Hybrid)  
+Psychology 
+Sociology (Hybrid)  
+Sociology 
+The Music of Social Justice  
+The Music of Social Justice (Hybrid) 
+United States History (S1) 
+United States History (S2) 
+
+STEM ACADEMY/INDUSTRIAL TECHNOLOGY:
+Architecture 1  
+Architecture 2  
+Architecture 3  
+Building Const/Applied Arch  
+DIY Home Projects
+Electricity & Electronics 1 
+Electricity 2  
+Engine Technology 
+Engine Technology 2 (Must be 16)
+Engineering Your Future 1 
+Engineering Your Future 2 
+Engineering Your Future 3 
+Enviro & Biomed Engineering
+Robotics
+Woods 1 
+Woods 2 
+Woods 3  
+Woods 4  
+INDUSTRIAL TECHNOLOGY AT LAKEVILLE NORTH:
+Manufacturing, Metals & Weld 1  
+Manufacturing, Metals & Weld 2  
+Manufacturing, Metals & Weld 3  
+Manufacturing, Metals & Weld 4  
+
+WORLD LANGUAGE:
+American Sign Language 1 (S1) 
+American Sign Language 1 (S2)  
+American Sign Language 2 (S1) 
+American Sign Language 2 (S2)  
+Honors French 4 (S1)  
+Honors French 4 (S2) 
+Honors Spanish 2 (S1)
+Honors Spanish 2 (S2)
+Honors Spanish 3 (S1)
+Honors Spanish 3 (S2)
+Honors Spanish 4 (S1)
+Honors Spanish 4 (S2)
+Honors Spanish 4 (S1) (Hybrid) 
+Honors Spanish 4 (S2) (Hybrid) 
+Spanish 1 (S1) 
+Spanish 1 (S2) 
+Spanish 2 (S1) (Hybrid)
+Spanish 2 (S2) (Hybrid)
+Spanish 2 (S1) 
+Spanish 2 (S2)  
+Spanish 3 (S1) (Hybrid)
+Spanish 3 (S2) (Hybrid)
+Spanish 3 (S1) 
+Spanish 3 (S2)
+
+END OF 10TH GRADE
+
+
+To get a Stem degree, you need 
+8 semesters of math
+8 semesters of science
+Engineering Your Future 1 & 2
+One class in one of the stem pathways
+Capstone course
+
+Stem Pathways:
+
+Computer Science
+Biomedical
+Engineering
+Industrial Technologies
+
+"""
+
+prompt = f"""
+ 
+You are a chat bot designed for a specific school and will only talk to the school's students. 
+
+ONLY TALK ABOUT CLASSES THAT ARE WITHIN THE LIST OF CLASSES GIVEN.
+
+If the student is forced to take the class, do not mention it as a class they can take
+
+If there are no specific classes directly related to the fields they talk about, say there are no good options.
+
+
+What classes should I take? I am interested in computer science, and am willing to work hard.
+
+
+
+Technical specifications: '''{list_of_classes}'''
+
+"""
+
+response = get_completion(prompt)
+print(response)
+
+
+
+# In[5]:
+
+
+import openai
+import os
+
+from dotenv import load_dotenv, find_dotenv
+_ = load_dotenv(find_dotenv())
+
+openai.api_key  = os.getenv('OPENAI_API_KEY')
+
+def get_completion(prompt, model="gpt-3.5-turbo"):
+    messages = [{"role": "user", "content": prompt}]
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        temperature=0, # this is the degree of randomness of the model's output
+    )
+    return response.choices[0].message["content"]
+
+list_of_classes = """
+START OF 9TH GRADE:
+
+ART:
+Art Lab 
+Ceramics 1 - Hand Building 
+Ceramics 2 – Pottery Wheel 
+Drawing
+Graphic Art & Design 1
+Graphic Art & Design 2 
+Painting
+Photography 1 (Digital Only)
+
+AVID:
+ AVID 9 (S1) 
+AVID 9 (S2) (An application and interview are required for admission)
+ 
+BUSINESS:
+Business Communication (Hybrid) 
+Business Communication (Virtual) 
+Career Investigations (Hybrid)
+Career Investigations (Virtual) 
+Marketing 1 (Hybrid) 
+Marketing 1 (Virtual) 
+Marketing 2 (Hybrid) 
+Marketing 2 (Virtual) 
+Personal Financial Management (Hybrid) 
+Personal Financial Management (Virtual)
+Word Processing/Keyboarding (Hybrid)  
+Word Processing/Keyboarding (Virtual) 
+
+ENGLISH LANGUAGE ARTS: 
+English 9 (This is a preregistered course) 
+Honors English 9 (This is a preregistered course) 
+Advanced Journalism (Hybrid) 
+Journalism 
+Journalism (Hybrid)  
+
+FAMILY AND CONSUMER SCIENCE: 
+Advanced Foods 
+Advanced Foods (Hybrid) 
+Baking and Pastries 
+Child Development 
+Child Development 2 
+Fashion Design 
+Introduction to Foods 
+
+MATHEMATICS: (You will be preregistered for the appropriate math level based on your 8th grade math course) 
+
+
+MUSIC: 
+Choir (S1)  
+Choir (S2) 
+Concert Band (S1)  
+Concert Band (S2)  
+Guitar 
+Music Lab  
+Music Production
+Piano 
+World Drumming 
+
+PHYSICAL EDUCATION: 
+Intro to Weight Training 
+Physical Education 9 
+Racquet Sports 
+Stress Management/First Aid (Hybrid)  
+
+SCIENCE: 
+AP Biology (S1) (Must contact your Dean) 
+AP Biology (S2) (Must contact your Dean)
+AP Chemistry 1 (Must contact your Dean) 
+Honors Biology (This is a preregistered course) 
+Physical Science (This is a preregistered course) 
+
+SOCIAL STUDIES: 
+AP Comparative Govt & Politics 
+AP Human Geography (S1)   
+AP Human Geography (S2)   
+AP US Government and Politics 
+Civics 
+Geography 
+The Music of Social Justice 
+The Music of Social Justice (Hybrid)
+
+STEM ACADEMY/INDUSTRIAL TECHNOLOGY: 
+Architecture 1
+DIY Home Projects 
+Electricity & Electronics 1 
+Engine Technology 
+Engineering Your Future 1 
+Engineering Your Future 2 
+Woods 1 
+
+INDUSTRIAL TECHNOLOGY AT LAKEVILLE NORTH: 
+Manufacturing, Metals & Weld 1
+Manufacturing, Metals & Weld 2 
+
+WORLD LANGUAGE: 
+(Must register for both semesters) 
+American Sign Language 1 (S1) 
+American Sign Language 1 (S2)
+Honors Spanish 2 (S1)
+Honors Spanish 2 (S2)
+Spanish 1 (S1)  
+Spanish 1 (S2)   
+Spanish 2 (S1) (Hybrid)
+Spanish 2 (S2) (Hybrid)
+Spanish 2 (S1) 
+Spanish 2 (S2)  
+
+END OF 9TH GRADE
+
+START OF 10TH GRADE
+
+ART:
+Art Lab 1
+Ceramics 1  Hand Building 
+Ceramics 2 – Pottery Wheel  
+Drawing  
+Drawing & Painting 2  
+Graphic Art & Design 1  
+Graphic Art & Design 2  
+Graphic Art & Design 3  
+Painting 15
+Photography 1 (Digital Only)  
+AVID
+AVID 1 (S1) 
+AVID 1 (S2)
+(An application and interview are required for admission)
+
+BUSINESS
+Accounting 1 (Virtual)
+Accounting 2 (Hybrid)  
+Accounting 2 (Virtual) 
+Business Communication (Hybrid)  
+Business Communication (Virtual) 
+Career Investigations (Hybrid) 
+Career Investigations (Virtual)
+Digital Media: Game & Web Dev 
+Digital Media: Game & Web Dev (Hybrid)  
+Digital Media: Game & Web Dev (Virtual) 
+Marketing 1 (Hybrid) 
+Marketing 1 (Virtual)
+Marketing 2 (Hybrid) 
+Marketing 2 (Virtual)
+Personal Financial Management (Hybrid) 
+Personal Financial Management (Virtual) 
+Retail Merch: School Store (Hybrid) 
+Word Processing/Keyboarding (Hybrid)  
+Word Processing/Keyboarding (Virtual) 
+
+ENGLISH LANGUAGE ARTS:
+Advanced Broadcast 
+Advanced Journalism (Hybrid)  
+Broadcast Media
+Creative Writing
+Creative Writing (Hybrid) 
+English 1 (S1)  
+English 1 (S2) 
+Film Analysis and Production 
+Honors English 10 (S1)  
+
+Honors English 10 (S1)  
+Interpersonal Communication (Hybrid)
+Interpersonal Communication
+Journalism 
+Journalism (Hybrid)  
+Public Speaking  
+Public Speaking (Hybrid) 
+Yearbook Journalism (Hybrid)  
+
+FAMILY AND CONSUMER SCIENCE:
+Advanced Foods
+Advanced Foods (Hybrid) 
+Baking and Pastries
+Child Development 1 
+Child Development 2 
+Fashion Design
+Introduction to Foods 
+
+MATHEMATICS:
+Algebra 2 (S1)
+Algebra 2 (S2)  
+Computer Programming 1  
+Computer Programming 2  
+Geometry (S1)
+Geometry (S2) 
+Honors Algebra 2 (S1) 
+Honors Algebra 2 (S2) 
+Honors Geometry (S1)  
+Honors Geometry (S2)  
+Honors PreCalculus (S1) 
+Honors PreCalculus (S2)  
+PreCalculus (S1)  
+PreCalculus (S2) 
+
+MUSIC:
+Choir (S1)  
+Choir (S2) 
+Concert Band (S1)  
+Concert Band (S2)  
+Guitar  
+Music Lab 
+Music Production  
+Piano  
+World Drumming  
+
+PHYSICAL EDUCATION/HEALTH:
+Advanced Racquet Sports 
+Competitive Team Sports 
+Dance 
+Health Issues 
+Health Issues Hybrid 
+Health Issues Online (Virtual) 
+Intermediate Weight Training 
+Intro to Sports Medicine
+Intro to Weight Training 
+Lifetime & Rec Activities 
+Physical Education 112 
+Physical Education 112 (Early Bird)  
+Physical Education Online (Virtual) 
+Racquet Sports 
+Stress Management/First Aid (Hybrid)  
+Unified Physical Education 
+
+SCIENCE:
+Anatomy & Physiology 
+Anatomy & Physiology 
+AP Biology (S1)
+AP Biology (S2) 
+AP Chemistry 1  
+Astronomy SCA1
+Biology (S1) 
+Biology (S2) 
+Chemistry (S1) 
+Chemistry (S2) 
+Honors Biology (S1)  
+Honors Biology (S2)  
+Honors Chemistry (S1)  
+Honors Chemistry (S2) 
+Science of Natural Disasters 
+
+
+SOCIAL STUDIES:
+AP Art History (S1) 
+AP Art History (S2)  
+AP Comparative Govt & Politics 
+AP Human Geography (S1) 
+AP Human Geography (S2) 
+AP Macroeconomics 
+AP Microeconomics 
+AP Psychology (S1) (Early Bird)  
+AP Psychology (S2) (Early Bird)  
+AP Psychology (S1) 
+AP Psychology (S2) 
+AP United States History (S1) 
+AP United States History (S2)  
+AP US Government and Politics 
+Civics 112 (Hybrid)  
+Civics 112 
+Criminal Justice (Hybrid) 
+Criminal Justice  
+Geography 
+History of Sports (Hybrid) 
+History of Sports  
+Introduction to Economics 
+Introduction to Economics (Hybrid)  
+Introduction to Economics (Virtual) 
+Psychology (Hybrid)  
+Psychology 
+Sociology (Hybrid)  
+Sociology 
+The Music of Social Justice  
+The Music of Social Justice (Hybrid) 
+United States History (S1) 
+United States History (S2) 
+
+STEM ACADEMY/INDUSTRIAL TECHNOLOGY:
+Architecture 1  
+Architecture 2  
+Architecture 3  
+Building Const/Applied Arch  
+DIY Home Projects
+Electricity & Electronics 1 
+Electricity 2  
+Engine Technology 
+Engine Technology 2 (Must be 16)
+Engineering Your Future 1 
+Engineering Your Future 2 
+Engineering Your Future 3 
+Enviro & Biomed Engineering
+Robotics
+Woods 1 
+Woods 2 
+Woods 3  
+Woods 4  
+INDUSTRIAL TECHNOLOGY AT LAKEVILLE NORTH:
+Manufacturing, Metals & Weld 1  
+Manufacturing, Metals & Weld 2  
+Manufacturing, Metals & Weld 3  
+Manufacturing, Metals & Weld 4  
+
+WORLD LANGUAGE:
+American Sign Language 1 (S1) 
+American Sign Language 1 (S2)  
+American Sign Language 2 (S1) 
+American Sign Language 2 (S2)  
+Honors French 4 (S1)  
+Honors French 4 (S2) 
+Honors Spanish 2 (S1)
+Honors Spanish 2 (S2)
+Honors Spanish 3 (S1)
+Honors Spanish 3 (S2)
+Honors Spanish 4 (S1)
+Honors Spanish 4 (S2)
+Honors Spanish 4 (S1) (Hybrid) 
+Honors Spanish 4 (S2) (Hybrid) 
+Spanish 1 (S1) 
+Spanish 1 (S2) 
+Spanish 2 (S1) (Hybrid)
+Spanish 2 (S2) (Hybrid)
+Spanish 2 (S1) 
+Spanish 2 (S2)  
+Spanish 3 (S1) (Hybrid)
+Spanish 3 (S2) (Hybrid)
+Spanish 3 (S1) 
+Spanish 3 (S2)
+
+END OF 10TH GRADE
+
+
+To get a Stem degree, you need 
+8 semesters of math
+8 semesters of science
+Engineering Your Future 1 & 2
+One class in one of the stem pathways
+Capstone course
+
+Stem Pathways:
+
+Computer Science
+Biomedical
+Engineering
+Industrial Technologies
+
+"""
+
+prompt = f"""
+ 
+You are a chat bot designed for a specific school and will only talk to the school's students. 
+
+ONLY TALK ABOUT CLASSES THAT ARE WITHIN THE LIST OF CLASSES GIVEN.
+
+If the student is forced to take the class, do not mention it as a class they can take
+
+If there are no specific classes directly related to the fields they talk about, say there are no good options.
+
+
+What classes should I take? I am interested in computer science, and am willing to work hard.
+
+
+
+Technical specifications: '''{list_of_classes}'''
+
+"""
+
+response = get_completion(prompt)
+print(response)
+
+
+
+# In[ ]:
+
+
+
+
